@@ -19,8 +19,10 @@ import { Pager } from '../../components/ui/Pager';
 import { BulkUploadUserModal } from '../../components/users/BulkUploadUserModal';
 import { BatchHierarchyModal } from '../../components/users/BatchHierarchyModal';
 import { usersService } from '../../services/usersService';
+import { useRoleAccess } from '../../hooks/useRoleAccess';
 
 export function ManageUsers({ onNotify }) {
+  const { canAccessModule } = useRoleAccess();
   const {
     users,
     filteredUsers,
@@ -254,15 +256,17 @@ export function ManageUsers({ onNotify }) {
           </div>
 
           <div className="panel-actions-wrap">
-            <button
-              type="button"
-              className="secondary-button"
-              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-              onClick={() => setHierarchyModalOpen(true)}
-            >
-              <Layers size={16} aria-hidden="true" />
-              Manage Cohorts & Batches
-            </button>
+            {canAccessModule('hierarchy') && (
+              <button
+                type="button"
+                className="secondary-button"
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                onClick={() => setHierarchyModalOpen(true)}
+              >
+                <Layers size={16} aria-hidden="true" />
+                Manage Cohorts & Batches
+              </button>
+            )}
 
             <button
               type="button"

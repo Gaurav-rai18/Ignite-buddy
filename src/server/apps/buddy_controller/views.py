@@ -9,8 +9,13 @@ from rest_framework import status
 from .models import SystemSetting, LabWorkstation, ExamPolicyRule
 from .policy_engine import evaluate_buddy_access
 from server.apps.accounts.models import User, Cohort, Batch, SubBatch
+from server.apps.accounts.permissions import ModuleAccessPermission
 from server.domain import policy
 from server.channels_push import send_channel_message
+
+
+class BuddyModuleAccessPermission(ModuleAccessPermission):
+    module_key = "buddy"
 
 
 def notify_policy_update():
@@ -19,6 +24,7 @@ def notify_policy_update():
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated, BuddyModuleAccessPermission])
 def start_exam(request):
     """Enables Exam Mode: blocks Trainee Buddy assistants during assessments."""
     SystemSetting.set_bool("buddy_enabled", False, description="Exam mode active", user=request.user)
@@ -34,6 +40,7 @@ def start_exam(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated, BuddyModuleAccessPermission])
 def end_exam(request):
     """Disables Exam Mode: restores normal Trainee Buddy assistance."""
     SystemSetting.set_bool("buddy_enabled", True, description="Buddy available", user=request.user)
@@ -77,7 +84,8 @@ class ExamPolicyRuleListCreateView(APIView):
     """
     CRUD for Hierarchical Exam Policy Rules and Admin Overrides.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "buddy"
 
     def get(self, request):
         now = timezone.now()
@@ -175,7 +183,8 @@ class ExamPolicyRuleListCreateView(APIView):
 
 
 class ExamPolicyRuleDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "buddy"
 
     def delete(self, request, pk):
         try:
@@ -189,6 +198,7 @@ class ExamPolicyRuleDetailView(APIView):
 
 
 @api_view(["GET", "PATCH", "POST", "PUT"])
+@permission_classes([IsAuthenticated, BuddyModuleAccessPermission])
 def get_or_update_buddy_setting(request):
     """
     Comprehensive Buddy configuration endpoint for Admin Console (/api/settings/buddy/).

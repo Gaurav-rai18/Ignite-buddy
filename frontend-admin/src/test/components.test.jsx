@@ -327,7 +327,7 @@ describe('Frontend Component Tests', () => {
       );
 
       expect(screen.queryByRole('menuitem', { name: /roles & permissions/i })).not.toBeInTheDocument();
-      expect(screen.getByText('Faculty / TA')).toBeInTheDocument();
+      expect(screen.getByText('TA')).toBeInTheDocument();
     });
 
     it('NotificationsDropdown renders notifications and marks all as read', async () => {

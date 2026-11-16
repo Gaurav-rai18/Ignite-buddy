@@ -269,6 +269,10 @@ class PreferencesExportRbacTests(AccountsTestBase):
         self.assertEqual(res.status_code, 200)
         self.assertFalse(res.data["can_manage"])
         self.assertIn("ADMIN", res.data["roles"])
+        self.assertEqual(res.data["roles"]["ADMIN"]["label"], "Ignite Administrator")
+        self.assertEqual(res.data["roles"]["TA"]["label"], "TA")
+        self.assertEqual(res.data["roles"]["MANAGER"]["label"], "Manager")
+        self.assertEqual(res.data["roles"]["HR"]["label"], "HR")
 
     def test_roles_matrix_post_admin_only(self):
         payload = {"roles": {"TA": {"permissions": {"buddy": True}}}}
@@ -285,3 +289,13 @@ class PreferencesExportRbacTests(AccountsTestBase):
         )
         self.assertEqual(res.status_code, 200)
         self.assertTrue(res.data["roles"]["ADMIN"]["permissions"]["users"])
+
+    def test_disabled_module_is_denied_for_role_but_admin_keeps_access(self):
+        self.admin_client.post(
+            "/api/accounts/roles-permissions/",
+            {"roles": {"TA": {"permissions": {"dashboard": False}}}},
+            format="json",
+        )
+
+        self.assertEqual(self.ta_client.get("/api/dashboard/").status_code, 403)
+        self.assertEqual(self.admin_client.get("/api/dashboard/").status_code, 200)

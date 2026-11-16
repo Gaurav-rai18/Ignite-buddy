@@ -606,9 +606,9 @@ describe('ProfileDropdown :: menu actions & role labels', () => {
 
   it.each([
     ['ADMIN', 'Ignite Administrator'],
-    ['TA', 'Faculty / TA'],
-    ['MANAGER', 'Ignite Manager'],
-    ['HR', 'Human Resources'],
+    ['TA', 'TA'],
+    ['MANAGER', 'Manager'],
+    ['HR', 'HR'],
     ['TRAINEE', 'Student Trainee'],
     ['CONTRACTOR', 'CONTRACTOR'],
   ])('maps role %s to the "%s" label', (role, label) => {
@@ -621,9 +621,9 @@ describe('ProfileDropdown :: menu actions & role labels', () => {
     expect(screen.getByText('Member')).toBeInTheDocument();
   });
 
-  it('labels a superuser as Workspace Owner and grants role management', () => {
+  it('labels a superuser as Ignite Administrator and grants role management', () => {
     renderDropdown({ full_name: 'Owner', email: 'o@x.com', role: 'TA', is_superuser: true });
-    expect(screen.getByText('Workspace Owner')).toBeInTheDocument();
+    expect(screen.getByText('Ignite Administrator')).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /roles & permissions/i })).toBeInTheDocument();
   });
 

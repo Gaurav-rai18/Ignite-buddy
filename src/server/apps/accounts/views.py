@@ -55,7 +55,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User, Cohort, Batch, Lab, SubBatch, Stream, Subject, SubBatchStaff, StreamFaculty
-from .permissions import IsAdmin, IsUserManagementStaff
+from .permissions import IsAdmin, IsUserManagementStaff, ModuleAccessPermission
 from .serializers import (
     LoginSerializer,
     UserCreateSerializer,
@@ -304,7 +304,9 @@ class UserListCreateView(APIView):
     permission_classes = [
         IsAuthenticated,
         IsUserManagementStaff,
+        ModuleAccessPermission,
     ]
+    module_permission = "users"
 
     def get(self, request):
         """
@@ -372,22 +374,20 @@ class UserDetailView(APIView):
             permission_classes = [
                 IsAuthenticated,
                 IsAdmin,
+                ModuleAccessPermission,
             ]
         else:
             permission_classes = [
                 IsAuthenticated,
                 IsUserManagementStaff,
+                ModuleAccessPermission,
             ]
 
         return [
             permission()
             for permission in permission_classes
         ]
-
-        return [
-            permission()
-            for permission in permission_classes
-        ]
+    module_permission = "users"
 
     def get(self, request, id):
         """
@@ -497,7 +497,9 @@ class ResetPasswordView(APIView):
     permission_classes = [
         IsAuthenticated,
         IsAdmin,
+        ModuleAccessPermission,
     ]
+    module_permission = "users"
 
     def post(self, request, id):
         """
@@ -568,7 +570,9 @@ class BulkUploadUsersView(APIView):
     permission_classes = [
         IsAuthenticated,
         IsUserManagementStaff,
+        ModuleAccessPermission,
     ]
+    module_permission = "users"
 
     def post(self, request):
         """
@@ -601,10 +605,11 @@ class BulkUploadUsersView(APIView):
 
 
 class CohortListView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method == "POST":
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request):
         cohorts = Cohort.objects.all().order_by("-code")
@@ -618,10 +623,11 @@ class CohortListView(APIView):
 
 
 class BatchListView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method == "POST":
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request):
         cohort_id = request.query_params.get("cohort")
@@ -638,10 +644,11 @@ class BatchListView(APIView):
 
 
 class SubBatchListView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method == "POST":
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request):
         batch_id = request.query_params.get("batch")
@@ -658,10 +665,11 @@ class SubBatchListView(APIView):
 
 
 class LabListView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method == "POST":
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request):
         labs = Lab.objects.all().order_by("name")
@@ -675,10 +683,11 @@ class LabListView(APIView):
 
 
 class CohortDetailView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method in ["PATCH", "DELETE"]:
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request, pk):
         try:
@@ -707,10 +716,11 @@ class CohortDetailView(APIView):
 
 
 class BatchDetailView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method in ["PATCH", "DELETE"]:
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request, pk):
         try:
@@ -739,10 +749,11 @@ class BatchDetailView(APIView):
 
 
 class SubBatchDetailView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method in ["PATCH", "DELETE"]:
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request, pk):
         try:
@@ -771,10 +782,11 @@ class SubBatchDetailView(APIView):
 
 
 class LabDetailView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method in ["PATCH", "DELETE"]:
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request, pk):
         try:
@@ -827,13 +839,14 @@ class UserProfileView(APIView):
 
 DEFAULT_ROLE_PERMISSIONS = {
     "ADMIN": {
-        "label": "Campus Administrator & Workspace Owner",
-        "description": "Full administrative ownership and configuration authority across all modules.",
+        "label": "Ignite Administrator",
+        "description": "Full administrative access across all Admin Console pages.",
         "is_immutable": True,
         "permissions": {
             "dashboard": True,
             "broadcast": True,
             "schedule": True,
+            "assignments": True,
             "buddy": True,
             "users": True,
             "documents": True,
@@ -843,15 +856,16 @@ DEFAULT_ROLE_PERMISSIONS = {
         },
     },
     "TA": {
-        "label": "Faculty & Teaching Assistants",
+        "label": "TA",
         "description": "Instructional team managing announcements, course timetables, and learning material.",
         "is_immutable": False,
         "permissions": {
             "dashboard": True,
             "broadcast": True,
             "schedule": True,
+            "assignments": True,
             "buddy": False,
-            "users": False,
+            "users": True,
             "documents": True,
             "hierarchy": False,
             "roles_permissions": False,
@@ -859,13 +873,14 @@ DEFAULT_ROLE_PERMISSIONS = {
         },
     },
     "MANAGER": {
-        "label": "Campus Manager & HR",
+        "label": "Manager",
         "description": "Operations and HR leads managing cohort cohorts, batches, and user directories.",
         "is_immutable": False,
         "permissions": {
             "dashboard": True,
             "broadcast": True,
             "schedule": True,
+            "assignments": False,
             "buddy": False,
             "users": True,
             "documents": False,
@@ -875,13 +890,14 @@ DEFAULT_ROLE_PERMISSIONS = {
         },
     },
     "HR": {
-        "label": "Human Resources Coordinator",
+        "label": "HR",
         "description": "Campus HR operations overseeing trainee cohorts, rosters, and administrative records.",
         "is_immutable": False,
         "permissions": {
             "dashboard": True,
             "broadcast": True,
             "schedule": False,
+            "assignments": False,
             "buddy": False,
             "users": True,
             "documents": False,
@@ -898,6 +914,7 @@ DEFAULT_ROLE_PERMISSIONS = {
             "dashboard": False,
             "broadcast": False,
             "schedule": False,
+            "assignments": False,
             "buddy": False,
             "users": False,
             "documents": False,
@@ -949,7 +966,7 @@ class RolesPermissionsView(APIView):
     def post(self, request):
         if not (request.user.is_superuser or request.user.role == "ADMIN"):
             return Response(
-                {"error": "Only Workspace Owners and Administrators can modify role permissions."},
+                {"error": "Only administrators can modify role permissions."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -959,7 +976,7 @@ class RolesPermissionsView(APIView):
 
         for role_key, role_data in incoming_roles.items():
             if role_key in matrix:
-                # Do not permit downgrading the Workspace Owner / ADMIN role
+                # Keep the ADMIN role immutable to prevent administrative lockout.
                 if role_key == "ADMIN":
                     continue
                 incoming_perms = role_data.get("permissions", {})
@@ -1010,7 +1027,8 @@ class SystemPreferencesView(APIView):
     GET  /api/settings/preferences/
     POST /api/settings/preferences/
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "system_preferences"
 
     def _get_stored_preferences(self):
         from server.apps.buddy_controller.models import SystemSetting
@@ -1057,7 +1075,8 @@ class DataExportView(APIView):
     Export System Data API.
     GET /api/settings/export/?type=users|audit
     """
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated, IsAdmin, ModuleAccessPermission]
+    module_permission = "system_preferences"
 
     def get(self, request):
         export_type = request.query_params.get("type", "users").lower()
@@ -1118,10 +1137,11 @@ class DataExportView(APIView):
 # --------------------------------------------------------------------------
 
 class StreamListView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method == "POST":
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request):
         streams = Stream.objects.all().order_by("name")
@@ -1135,10 +1155,11 @@ class StreamListView(APIView):
 
 
 class StreamDetailView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method in ("PUT", "PATCH", "DELETE"):
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request, pk):
         try:
@@ -1169,10 +1190,11 @@ class StreamDetailView(APIView):
 
 
 class SubjectListView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method == "POST":
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request):
         subjects = Subject.objects.all().order_by("name")
@@ -1186,10 +1208,11 @@ class SubjectListView(APIView):
 
 
 class SubjectDetailView(APIView):
+    module_permission = "hierarchy"
+    module_permission_fallbacks = ("users", "broadcast", "schedule", "assignments", "buddy", "documents")
+
     def get_permissions(self):
-        if self.request.method in ("PUT", "PATCH", "DELETE"):
-            return [IsAuthenticated(), IsAdmin()]
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def get(self, request, pk):
         try:
@@ -1227,7 +1250,10 @@ class BulkImportMasterDataView(APIView):
       - 'streams': code, name, description
       - 'subjects': code, name, description
     """
-    permission_classes = [IsAuthenticated, IsAdmin]
+    def get_permissions(self):
+        import_type = str(self.request.data.get("type", "")).lower().strip()
+        self.module_permission = "users" if import_type == "users" else "hierarchy"
+        return [IsAuthenticated(), ModuleAccessPermission()]
 
     def post(self, request):
         import_type = request.data.get("type", "").lower().strip()

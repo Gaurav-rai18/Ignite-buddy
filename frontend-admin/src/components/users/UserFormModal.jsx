@@ -4,6 +4,7 @@ import { Field } from '../ui/Field';
 import { createPortal } from 'react-dom';
 import { usersService } from '../../services/usersService';
 import { BatchHierarchyModal } from './BatchHierarchyModal';
+import { useRoleAccess } from '../../hooks/useRoleAccess';
 
 export function UserFormModal({
   isOpen,
@@ -12,6 +13,7 @@ export function UserFormModal({
   initialUser = null,
 }) {
   const isEditing = Boolean(initialUser);
+  const { canAccessModule } = useRoleAccess();
 
   const [form, setForm] = useState({
     username: '',
@@ -284,30 +286,32 @@ export function UserFormModal({
             label={
               <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <span>TCS Ignite Sub-Batch (Cohort & Lab)</span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowHierarchyModal(true);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                {canAccessModule('hierarchy') && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       setShowHierarchyModal(true);
-                    }
-                  }}
-                  style={{
-                    color: 'var(--color-primary)',
-                    cursor: 'pointer',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    textDecoration: 'underline',
-                  }}
-                >
-                  + Add / Manage Batches
-                </span>
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        setShowHierarchyModal(true);
+                      }
+                    }}
+                    style={{
+                      color: 'var(--color-primary)',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    + Add / Manage Batches
+                  </span>
+                )}
               </span>
             }
             htmlFor="user-sub-batch"
@@ -387,13 +391,13 @@ export function UserFormModal({
         </form>
       </div>
 
-      <BatchHierarchyModal
-        isOpen={showHierarchyModal}
-        onClose={() => setShowHierarchyModal(false)}
-        onHierarchyUpdated={() => {
-          refreshHierarchyData();
-        }}
-      />
+      {canAccessModule('hierarchy') && (
+        <BatchHierarchyModal
+          isOpen={showHierarchyModal}
+          onClose={() => setShowHierarchyModal(false)}
+          onHierarchyUpdated={refreshHierarchyData}
+        />
+      )}
     </div>,
     document.body
   );

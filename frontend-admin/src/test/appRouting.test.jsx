@@ -247,6 +247,24 @@ describe('App route table & access guards', () => {
     expect(screen.getByRole('button', { name: /new broadcast/i })).toBeInTheDocument();
   });
 
+  it('blocks a role from a directly opened page when its module permission is disabled', async () => {
+    authMock.state.user = { ...adminUser, role: 'TA', is_superuser: false };
+    authMock.state.isAuthenticated = true;
+    authMock.state.loading = false;
+    settingsService.getRolesPermissions.mockResolvedValue({
+      roles: {
+        TA: {
+          permissions: { dashboard: true, schedule: false },
+        },
+      },
+    });
+
+    renderApp('/schedule');
+
+    expect(await screen.findByRole('heading', { name: 'Access restricted' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Schedule & Timetable Management' })).not.toBeInTheDocument();
+  });
+
   it('redirects an authenticated user away from /login to the dashboard', async () => {
     setAuthenticated();
     renderApp('/login');

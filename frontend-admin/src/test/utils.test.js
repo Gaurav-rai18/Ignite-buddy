@@ -90,17 +90,17 @@ describe('users utils', () => {
   });
 
   describe('getUserRoleLabel', () => {
-    it('always returns "Workspace Owner" for superusers', () => {
-      expect(getUserRoleLabel('ADMIN', true)).toBe('Workspace Owner');
-      expect(getUserRoleLabel('anything', true)).toBe('Workspace Owner');
+    it('always returns "Ignite Administrator" for superusers', () => {
+      expect(getUserRoleLabel('ADMIN', true)).toBe('Ignite Administrator');
+      expect(getUserRoleLabel('anything', true)).toBe('Ignite Administrator');
     });
 
     it('maps known roles regardless of casing', () => {
       expect(getUserRoleLabel('ADMIN')).toBe('Ignite Administrator');
       expect(getUserRoleLabel('admin')).toBe('Ignite Administrator');
-      expect(getUserRoleLabel('TA')).toBe('Faculty / TA');
-      expect(getUserRoleLabel('MANAGER')).toBe('Ignite Manager');
-      expect(getUserRoleLabel('HR')).toBe('Human Resources');
+      expect(getUserRoleLabel('TA')).toBe('TA');
+      expect(getUserRoleLabel('MANAGER')).toBe('Manager');
+      expect(getUserRoleLabel('HR')).toBe('HR');
       expect(getUserRoleLabel('TRAINEE')).toBe('Student Trainee');
     });
 

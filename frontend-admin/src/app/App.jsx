@@ -16,6 +16,7 @@ import { RolesPermissions } from '../pages/RolesPermissions/RolesPermissions';
 import { Settings } from '../pages/Settings/Settings';
 import { NotFound } from '../pages/NotFound/NotFound';
 import { broadcastService } from '../services/broadcastService';
+import { RoleAccessProvider } from '../hooks/useRoleAccess';
 
 function PublicOnlyRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -80,6 +81,7 @@ function AppRoutes() {
   }, []);
 
   return (
+    <RoleAccessProvider>
     <Routes>
       <Route
         path="/login"
@@ -103,27 +105,30 @@ function AppRoutes() {
         }
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard onNotify={notify} />} />
+        <Route path="dashboard" element={<ProtectedRoute moduleKey="dashboard"><Dashboard onNotify={notify} /></ProtectedRoute>} />
         <Route
           path="broadcast"
           element={
-            <Broadcast
-              onNotify={notify}
-              onUpdateBroadcastCount={handleUpdateBroadcastCount}
-            />
+            <ProtectedRoute moduleKey="broadcast">
+              <Broadcast
+                onNotify={notify}
+                onUpdateBroadcastCount={handleUpdateBroadcastCount}
+              />
+            </ProtectedRoute>
           }
         />
-        <Route path="schedule" element={<Schedule onNotify={notify} />} />
-        <Route path="buddy" element={<BuddyControl onNotify={notify} />} />
-        <Route path="users" element={<ManageUsers onNotify={notify} />} />
-        <Route path="documents" element={<AddDocuments onNotify={notify} />} />
-        <Route path="assignments" element={<Assignments onNotify={notify} />} />
+        <Route path="schedule" element={<ProtectedRoute moduleKey="schedule"><Schedule onNotify={notify} /></ProtectedRoute>} />
+        <Route path="buddy" element={<ProtectedRoute moduleKey="buddy"><BuddyControl onNotify={notify} /></ProtectedRoute>} />
+        <Route path="users" element={<ProtectedRoute moduleKey="users"><ManageUsers onNotify={notify} /></ProtectedRoute>} />
+        <Route path="documents" element={<ProtectedRoute moduleKey="documents"><AddDocuments onNotify={notify} /></ProtectedRoute>} />
+        <Route path="assignments" element={<ProtectedRoute moduleKey="assignments"><Assignments onNotify={notify} /></ProtectedRoute>} />
         <Route path="profile" element={<Profile onNotify={notify} />} />
-        <Route path="roles-permissions" element={<RolesPermissions onNotify={notify} />} />
-        <Route path="settings" element={<Settings onNotify={notify} />} />
+        <Route path="roles-permissions" element={<ProtectedRoute moduleKey="roles_permissions"><RolesPermissions onNotify={notify} /></ProtectedRoute>} />
+        <Route path="settings" element={<ProtectedRoute moduleKey="system_preferences"><Settings onNotify={notify} /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+    </RoleAccessProvider>
   );
 }
 

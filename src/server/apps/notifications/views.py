@@ -11,13 +11,14 @@ from rest_framework.views import APIView
 from .models import Notification, NotificationRecipient
 from .serializers import NotificationSerializer
 from server.apps.accounts.models import User, Cohort, Batch, SubBatch, Stream
-from server.apps.accounts.permissions import CanManageBroadcasts
+from server.apps.accounts.permissions import CanManageBroadcasts, ModuleAccessPermission
 from server.channels_push import send_channel_message
 from server.realtime import notifier
 
 
 class BroadcastCreateView(APIView):
-    permission_classes = [IsAuthenticated, CanManageBroadcasts]
+    permission_classes = [IsAuthenticated, CanManageBroadcasts, ModuleAccessPermission]
+    module_permission = "broadcast"
 
     def post(self, request):
         title = request.data.get("title", "").strip()
@@ -173,7 +174,8 @@ class BroadcastCreateView(APIView):
 
 
 class BroadcastHistoryView(APIView):
-    permission_classes = [IsAuthenticated, CanManageBroadcasts]
+    permission_classes = [IsAuthenticated, CanManageBroadcasts, ModuleAccessPermission]
+    module_permission = "broadcast"
 
     def get(self, request):
         notifications = (

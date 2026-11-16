@@ -13,19 +13,21 @@ import {
 } from 'lucide-react';
 import { ProfileDropdown } from './ProfileDropdown';
 import { getUserDisplayName, getUserInitials, getUserRoleLabel } from '../../utils/users';
+import { useRoleAccess } from '../../hooks/useRoleAccess';
 
 const NAV_ITEMS = [
-  { path: '/dashboard', name: 'Dashboard', icon: LayoutDashboard, label: 'Overview' },
-  { path: '/broadcast', name: 'Broadcast', icon: Megaphone, label: 'Announcements' },
-  { path: '/schedule', name: 'Schedule', icon: CalendarClock, label: 'Timetable & timing' },
-  { path: '/assignments', name: 'Assignments', icon: BookOpen, label: 'Tasks & deadlines' },
-  { path: '/buddy', name: 'Buddy Control', icon: Bot, label: 'Exam-time control' },
-  { path: '/users', name: 'Manage Users', icon: Users, label: 'Add, edit & roles' },
-  { path: '/documents', name: 'Add Documents', icon: FileText, label: 'Documents & sharing' },
+  { path: '/dashboard', moduleKey: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, label: 'Overview' },
+  { path: '/broadcast', moduleKey: 'broadcast', name: 'Broadcast', icon: Megaphone, label: 'Announcements' },
+  { path: '/schedule', moduleKey: 'schedule', name: 'Schedule', icon: CalendarClock, label: 'Timetable & timing' },
+  { path: '/assignments', moduleKey: 'assignments', name: 'Assignments', icon: BookOpen, label: 'Tasks & deadlines' },
+  { path: '/buddy', moduleKey: 'buddy', name: 'Buddy Control', icon: Bot, label: 'Exam-time control' },
+  { path: '/users', moduleKey: 'users', name: 'Manage Users', icon: Users, label: 'Add, edit & roles' },
+  { path: '/documents', moduleKey: 'documents', name: 'Add Documents', icon: FileText, label: 'Documents & sharing' },
 ];
 
 export function Sidebar({ mobileNav, onCloseMobileNav, broadcastCount = 0, onSignOut, user }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { canAccessModule } = useRoleAccess();
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -86,7 +88,7 @@ export function Sidebar({ mobileNav, onCloseMobileNav, broadcastCount = 0, onSig
         <div className="nav-caption">WORKSPACE</div>
 
         <nav aria-label="Main menu">
-          {NAV_ITEMS.map(({ path, name, icon: Icon, label }) => (
+          {NAV_ITEMS.filter(({ moduleKey }) => canAccessModule(moduleKey)).map(({ path, name, icon: Icon, label }) => (
             <NavLink
               key={path}
               to={path}

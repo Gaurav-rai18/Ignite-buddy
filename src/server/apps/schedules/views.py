@@ -15,7 +15,7 @@ from .models import Schedule, TimetableSlot
 from .serializers import ScheduleSerializer, TimetableSlotSerializer
 from .parser import parse_schedule_excel
 from server.apps.accounts.models import Cohort, Batch, SubBatch, Stream, Lab, Subject, User, SubBatchStaff, StreamFaculty
-from server.apps.accounts.permissions import IsUserManagementStaff
+from server.apps.accounts.permissions import IsUserManagementStaff, ModuleAccessPermission
 from server.storage.central import get_central
 from server.realtime import notifier
 
@@ -536,7 +536,8 @@ def _save_slots_from_payload(schedule: Schedule, data: dict):
 
 
 class ScheduleListCreateView(APIView):
-    permission_classes = [IsAuthenticated, IsUserManagementStaff]
+    permission_classes = [IsAuthenticated, IsUserManagementStaff, ModuleAccessPermission]
+    module_permission = "schedule"
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get(self, request):
@@ -604,7 +605,8 @@ class ScheduleListCreateView(APIView):
 
 
 class ScheduleDetailView(APIView):
-    permission_classes = [IsAuthenticated, IsUserManagementStaff]
+    permission_classes = [IsAuthenticated, IsUserManagementStaff, ModuleAccessPermission]
+    module_permission = "schedule"
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get_object(self, pk):
@@ -683,7 +685,8 @@ class ScheduleDetailView(APIView):
 
 
 class ScheduleActivateView(APIView):
-    permission_classes = [IsAuthenticated, IsUserManagementStaff]
+    permission_classes = [IsAuthenticated, IsUserManagementStaff, ModuleAccessPermission]
+    module_permission = "schedule"
 
     def post(self, request, pk):
         schedule = Schedule.objects.filter(pk=pk).first()
@@ -706,7 +709,8 @@ class ScheduleActivateView(APIView):
 
 
 class ScheduleParseExcelView(APIView):
-    permission_classes = [IsAuthenticated, IsUserManagementStaff]
+    permission_classes = [IsAuthenticated, IsUserManagementStaff, ModuleAccessPermission]
+    module_permission = "schedule"
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
@@ -722,7 +726,8 @@ class ScheduleParseExcelView(APIView):
 
 
 class BatchTimetableLiveView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "schedule"
 
     def get(self, request):
         batch = request.query_params.get("batch", "*")

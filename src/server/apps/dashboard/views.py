@@ -1,11 +1,16 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 
+from server.apps.accounts.permissions import ModuleAccessPermission
 from server.domain import policy
 
 
 class DashboardSummaryView(APIView):
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "dashboard"
+
     """
     Returns summary metrics for the Admin Dashboard:
       - broadcast_count

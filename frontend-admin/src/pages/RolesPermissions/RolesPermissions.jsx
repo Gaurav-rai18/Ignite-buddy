@@ -19,6 +19,7 @@ const MODULES = [
   { key: 'dashboard', name: 'Dashboard Overview', desc: 'Real-time metrics, active trainee counts, and campus summary' },
   { key: 'broadcast', name: 'Broadcast & Announcements', desc: 'Publish notifications to cohorts, batches, and individual users' },
   { key: 'schedule', name: 'Schedule & Timetables', desc: 'Publish weekly batch timetables and room assignments' },
+  { key: 'assignments', name: 'Assignments', desc: 'Create and manage trainee tasks and deadlines' },
   { key: 'buddy', name: 'Buddy Control Center', desc: 'Master AI assistant toggle, exam lockdowns, and guardrail policies' },
   { key: 'users', name: 'Manage Users & Trainees', desc: 'Directory management, role assignment, and bulk CSV enrollment' },
   { key: 'documents', name: 'Add Documents (Knowledge Base)', desc: 'Upload syllabus PDFs and trigger RAG vector indexing' },
@@ -26,6 +27,8 @@ const MODULES = [
   { key: 'roles_permissions', name: 'Roles & Permissions', desc: 'Configure module access control and security permissions' },
   { key: 'system_preferences', name: 'System Preferences', desc: 'Configure workspace identity, academic dates, and global preferences' },
 ];
+
+const ADMIN_CONSOLE_ROLES = ['ADMIN', 'TA', 'MANAGER', 'HR'];
 
 export function RolesPermissions({ onNotify }) {
   const { user } = useAuth();
@@ -47,11 +50,16 @@ export function RolesPermissions({ onNotify }) {
     try {
       const data = await settingsService.getRolesPermissions();
       if (data && data.roles) {
-        setRolesData(data.roles);
+        const adminRoles = Object.fromEntries(
+          ADMIN_CONSOLE_ROLES
+            .filter((roleKey) => data.roles[roleKey])
+            .map((roleKey) => [roleKey, data.roles[roleKey]])
+        );
+        setRolesData(adminRoles);
         setUserCounts(data.user_counts || {});
         setCanManage(Boolean(data.can_manage));
-        if (!data.roles[selectedRole]) {
-          setSelectedRole(Object.keys(data.roles)[0]);
+        if (!adminRoles[selectedRole]) {
+          setSelectedRole(Object.keys(adminRoles)[0] || 'ADMIN');
         }
       }
     } catch (err) {
@@ -95,7 +103,11 @@ export function RolesPermissions({ onNotify }) {
     try {
       const res = await settingsService.updateRolesPermissions(rolesData);
       if (res && res.roles) {
-        setRolesData(res.roles);
+        setRolesData(Object.fromEntries(
+          ADMIN_CONSOLE_ROLES
+            .filter((roleKey) => res.roles[roleKey])
+            .map((roleKey) => [roleKey, res.roles[roleKey]])
+        ));
       }
       setSuccess('Role permissions saved and enforced across backend and frontend.');
       if (onNotify) {
@@ -120,7 +132,7 @@ export function RolesPermissions({ onNotify }) {
       <PageIntro
         eyebrow="ACCESS CONTROL & GOVERNANCE"
         title="Roles &amp; Permissions"
-        subtitle="Manage module-level privileges, administrative authority, and governance across TCS Ignite user roles."
+        subtitle="Manage page access for administrators, TAs, managers, and HR."
       />
 
       {error && <ErrorBanner message={error} />}
@@ -165,7 +177,7 @@ export function RolesPermissions({ onNotify }) {
         >
           <ShieldAlert size={18} />
           <span>
-            You have view-only access to this configuration. Only Ignite Administrators and Workspace Owners can modify permission policies.
+            You have view-only access to this configuration. Only administrators can modify permission policies.
           </span>
         </div>
       )}
@@ -236,7 +248,7 @@ export function RolesPermissions({ onNotify }) {
                   }}
                 >
                   <Lock size={11} />
-                  {selectedRole === 'ADMIN' ? 'Irrevocable Workspace Owner' : 'Enforced Non-Admin Policy'}
+                  {selectedRole === 'ADMIN' ? 'Protected Administrator' : 'Enforced Role Policy'}
                 </span>
               )}
             </div>
@@ -372,8 +384,8 @@ export function RolesPermissions({ onNotify }) {
       >
         <Info size={20} style={{ color: 'var(--color-primary)', flexShrink: 0, marginTop: '2px' }} />
         <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-          <b>Security Architecture Note:</b> Workspace Owner access cannot be downgraded to prevent administrative lockout.
-          Module permissions configured here are validated across both frontend routes and Django REST backend permission classes.
+          <b>Security Architecture Note:</b> Administrator access always includes every page to prevent administrative lockout.
+          Other role permissions are enforced across frontend routes and Django REST API endpoints. Trainee accounts remain separate and cannot sign in to this Admin Console.
         </div>
       </div>
     </div>

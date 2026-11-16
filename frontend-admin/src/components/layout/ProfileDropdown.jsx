@@ -2,10 +2,12 @@ import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Settings, LogOut, ShieldCheck } from 'lucide-react';
 import { getUserDisplayName, getUserInitials, getUserRoleLabel } from '../../utils/users';
+import { useRoleAccess } from '../../hooks/useRoleAccess';
 
 export function ProfileDropdown({ isOpen, onClose, onSignOut, user }) {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { canAccessModule } = useRoleAccess();
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -109,15 +111,17 @@ export function ProfileDropdown({ isOpen, onClose, onSignOut, user }) {
         </button>
       )}
 
-      <button
-        type="button"
-        className="profile-menu-item"
-        role="menuitem"
-        onClick={() => handleNavigate('/settings')}
-      >
-        <Settings size={15} aria-hidden="true" />
-        <span>System Preferences</span>
-      </button>
+      {canAccessModule('system_preferences') && (
+        <button
+          type="button"
+          className="profile-menu-item"
+          role="menuitem"
+          onClick={() => handleNavigate('/settings')}
+        >
+          <Settings size={15} aria-hidden="true" />
+          <span>System Preferences</span>
+        </button>
+      )}
 
       <div className="profile-divider" />
 

@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from .models import Assignment
 from .serializers import AssignmentSerializer
 from server.apps.accounts.models import User
+from server.apps.accounts.permissions import ModuleAccessPermission
 from server.apps.notifications.models import Notification, NotificationRecipient
 from server.channels_push import send_channel_message
 from server.realtime import notifier
@@ -125,7 +126,8 @@ def _broadcast_assignment_event(assignment, action_verb="Published", user=None, 
 
 
 class AssignmentListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "assignments"
 
     def get(self, request):
         assignments = (
@@ -159,7 +161,8 @@ class AssignmentListView(APIView):
 
 
 class AssignmentCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "assignments"
 
     def post(self, request):
         serializer = AssignmentSerializer(data=request.data)
@@ -175,7 +178,8 @@ class AssignmentCreateView(APIView):
 
 
 class AssignmentDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "assignments"
 
     def get(self, request, pk):
         try:
@@ -227,7 +231,8 @@ class AssignmentDetailView(APIView):
 
 
 class MyAssignmentsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "assignments"
 
     def get(self, request):
         assignments = (
@@ -244,7 +249,8 @@ class MyAssignmentsView(APIView):
 
 
 class OthersAssignmentsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "assignments"
 
     def get(self, request):
         assignments = (
@@ -261,7 +267,8 @@ class OthersAssignmentsView(APIView):
 
 
 class UpdateDeadlineView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "assignments"
 
     def patch(self, request, pk):
         try:
@@ -301,7 +308,8 @@ class UpdateDeadlineView(APIView):
 
 
 class DeleteAssignmentView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "assignments"
 
     def delete(self, request, pk):
         Assignment.objects.filter(id=pk).delete()

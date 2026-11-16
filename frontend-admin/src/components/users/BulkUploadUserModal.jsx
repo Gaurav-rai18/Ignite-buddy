@@ -16,12 +16,14 @@ import {
   BookOpen,
   Users,
 } from 'lucide-react';
+import { useRoleAccess } from '../../hooks/useRoleAccess';
 
 export function BulkUploadUserModal({
   isOpen,
   onClose,
   onUpload,
 }) {
+  const { canAccessModule } = useRoleAccess();
   const [bulkTarget, setBulkTarget] = useState('users'); // 'users' | 'hierarchy' | 'streams' | 'subjects'
   const [activeTab, setActiveTab] = useState('file'); // 'file' | 'paste'
   const [file, setFile] = useState(null);
@@ -310,7 +312,7 @@ export function BulkUploadUserModal({
               { id: 'hierarchy', label: 'Hierarchy (Cohorts/Batches)', icon: Layers },
               { id: 'streams', label: 'Elective Streams', icon: Sparkles },
               { id: 'subjects', label: 'Curriculum Subjects', icon: BookOpen },
-            ].map((t) => {
+            ].filter((target) => canAccessModule(target.id === 'users' ? 'users' : 'hierarchy')).map((t) => {
               const Icon = t.icon;
               return (
                 <button

@@ -12,6 +12,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from .models import KnowledgeDocument
 from server.apps.accounts.models import Cohort, Batch
+from server.apps.accounts.permissions import ModuleAccessPermission
 
 
 def format_file_size(size_bytes: int) -> str:
@@ -34,7 +35,8 @@ def safe_build_absolute_uri(request, url):
 
 
 class DocumentListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "documents"
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get(self, request):
@@ -224,7 +226,8 @@ class DocumentListCreateView(APIView):
 
 
 class DocumentDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "documents"
 
     def get(self, request, pk):
         try:
@@ -281,7 +284,8 @@ class KnowledgeBaseStatsView(APIView):
     Reports total chunks indexed across ChromaDB spaces (General and Ignite)
     and document metrics for administrative visibility.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ModuleAccessPermission]
+    module_permission = "documents"
 
     def get(self, request):
         try:

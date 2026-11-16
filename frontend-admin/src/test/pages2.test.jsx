@@ -130,7 +130,7 @@ const rolesFixture = () => ({
     },
   },
   TA: {
-    label: 'Faculty / TA',
+    label: 'TA',
     description: 'Teaching assistants',
     is_immutable: false,
     permissions: {
@@ -640,17 +640,18 @@ describe('RolesPermissions page', () => {
     renderPage(<RolesPermissions onNotify={vi.fn()} />);
 
     expect(await screen.findByRole('button', { name: /administrator/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /faculty \/ ta/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^ta/i })).toBeInTheDocument();
     expect(screen.getByText('Dashboard Overview')).toBeInTheDocument();
     expect(screen.getByText('Broadcast & Announcements')).toBeInTheDocument();
-    expect(screen.getAllByRole('checkbox')).toHaveLength(9);
+    expect(screen.getAllByRole('checkbox')).toHaveLength(10);
+    expect(screen.queryByRole('button', { name: /student trainee/i })).not.toBeInTheDocument();
   });
 
   it('disables toggles and hides save for the immutable ADMIN role', async () => {
     renderPage(<RolesPermissions onNotify={vi.fn()} />);
     await screen.findByText('Dashboard Overview');
 
-    expect(screen.getByText(/Irrevocable Workspace Owner/i)).toBeInTheDocument();
+    expect(screen.getByText(/Protected Administrator/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /save permissions/i })).not.toBeInTheDocument();
 
     for (const cb of screen.getAllByRole('checkbox')) {
@@ -664,7 +665,7 @@ describe('RolesPermissions page', () => {
     renderPage(<RolesPermissions onNotify={onNotify} />);
     await screen.findByText('Dashboard Overview');
 
-    await user.click(screen.getByRole('button', { name: /faculty \/ ta/i }));
+    await user.click(screen.getByRole('button', { name: /^ta/i }));
 
     const saveButtons = await screen.findAllByRole('button', { name: /save permissions/i });
     expect(saveButtons.length).toBeGreaterThan(0);
@@ -715,7 +716,7 @@ describe('RolesPermissions page', () => {
     renderPage(<RolesPermissions onNotify={vi.fn()} />);
     await screen.findByText('Dashboard Overview');
 
-    await user.click(screen.getByRole('button', { name: /faculty \/ ta/i }));
+    await user.click(screen.getByRole('button', { name: /^ta/i }));
     const checkboxes = screen.getAllByRole('checkbox');
     await user.click(checkboxes[0]);
     await user.click(screen.getAllByRole('button', { name: /save permissions/i })[0]);

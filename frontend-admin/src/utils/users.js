@@ -63,18 +63,18 @@ export function getUserDisplayName(user) {
   }
   
   export function getUserRoleLabel(role, isSuperuser = false) {
-    if (isSuperuser) return 'Workspace Owner';
+    if (isSuperuser) return 'Ignite Administrator';
   
     const normalized = (role || '').toUpperCase();
     switch (normalized) {
       case 'ADMIN':
         return 'Ignite Administrator';
       case 'TA':
-        return 'Faculty / TA';
+        return 'TA';
       case 'MANAGER':
-        return 'Ignite Manager';
+        return 'Manager';
       case 'HR':
-        return 'Human Resources';
+        return 'HR';
       case 'TRAINEE':
         return 'Student Trainee';
       default:
