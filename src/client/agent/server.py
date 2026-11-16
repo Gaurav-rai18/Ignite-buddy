@@ -497,6 +497,11 @@ class Agent:
                     except Exception:
                         pass
                     return
+            if t == "cancel":
+                # Optimistically clear local busy state so the UI snaps to idle immediately
+                # without waiting for the server round-trip; the server will also send idle
+                # once it finishes unwinding, which is a harmless duplicate.
+                asyncio.create_task(self.broadcast({"type": "state", "state": "idle"}))
             self.net.send(m)
         elif t in UI_TO_SHELL:
             if self.shell:
