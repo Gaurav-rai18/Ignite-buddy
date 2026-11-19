@@ -89,6 +89,26 @@ class DocumentListCreateView(APIView):
         target_batch_obj = Batch.objects.filter(id=batch_id).first() if batch_id else None
 
         suffix = Path(upload.name).suffix.lower()
+        allowed_file_types = {
+            ".pdf": "PDF",
+            ".txt": "TXT",
+            ".docx": "DOCX",
+            ".pptx": "PPTX",
+            ".md": "MARKDOWN",
+        }
+
+        if suffix not in allowed_file_types:
+            return Response(
+                {
+                    "error": (
+                        f"Unsupported file type '{suffix or 'unknown'}'. "
+                        "Allowed file types are PDF, TXT, DOCX, PPTX, and MD."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        file_type = allowed_file_types[suffix]
         file_type_map = {
             ".pdf": "PDF",
             ".txt": "TXT",
@@ -96,6 +116,7 @@ class DocumentListCreateView(APIView):
             ".pptx": "PPTX",
             ".md": "MARKDOWN",
         }
+
         file_type = file_type_map.get(suffix, suffix.replace(".", "").upper() or "DOC")
 
         content_bytes = upload.read()

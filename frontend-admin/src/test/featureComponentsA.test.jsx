@@ -11,6 +11,7 @@ import { DocumentViewerModal } from '../components/documents/DocumentViewerModal
 import { AssignmentList } from '../components/assignment/AssignmentList';
 import { AssignmentPreviewModal } from '../components/assignment/AssignmentPreviewModal';
 import { BroadcastList } from '../components/broadcast/BroadcastList';
+import { BroadcastPreviewModal } from '../components/broadcast/BroadcastPreviewModal';
 import { RecipientSelector } from '../components/broadcast/RecipientSelector';
 import { HeroBanner } from '../components/dashboard/HeroBanner';
 import { QuickActions } from '../components/dashboard/QuickActions';
@@ -504,14 +505,16 @@ describe('AssignmentPreviewModal', () => {
   it('renders the preview fields including link and audience', () => {
     render(<AssignmentPreviewModal isOpen onClose={vi.fn()} form={form} />);
 
-    expect(screen.getByRole('dialog', { name: /assignment preview/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /assignment details/i })).toBeInTheDocument();
     expect(screen.getByText('Networking Basics')).toBeInTheDocument();
     expect(screen.getByText('Networks')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'https://lms.example.com/net' })).toBeInTheDocument();
-    expect(screen.getByText('2026-11-02')).toBeInTheDocument();
-    expect(screen.getByText('2026-11-20')).toBeInTheDocument();
+    expect(screen.getByText('2 Nov 2026')).toBeInTheDocument();
+    expect(screen.getByText('20 Nov 2026')).toBeInTheDocument();
     expect(screen.getByText('Read chapters 1-3')).toBeInTheDocument();
     expect(screen.getByText('Cohort 2026')).toBeInTheDocument();
+    expect(screen.getByText('Start')).toBeInTheDocument();
+    expect(screen.getByText('Deadline')).toBeInTheDocument();
   });
 
   it('uses placeholder dashes for missing fields and closes on the Close button', async () => {
@@ -523,6 +526,22 @@ describe('AssignmentPreviewModal', () => {
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(3);
 
     await user.click(screen.getByRole('button', { name: /^close$/i }));
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('traps keyboard focus and closes on Escape', async () => {
+    const user = userEvent.setup();
+    const handleClose = vi.fn();
+    render(<AssignmentPreviewModal isOpen onClose={handleClose} form={{}} />);
+
+    const headerClose = screen.getByRole('button', { name: /close assignment preview/i });
+    const footerClose = screen.getByRole('button', { name: /^close$/i });
+    expect(document.activeElement).toBe(headerClose);
+
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(footerClose);
+
+    await user.keyboard('{Escape}');
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 });
@@ -646,6 +665,51 @@ describe('BroadcastList', () => {
     render(<BroadcastList broadcasts={[]} historyFilter="others" onCreateClick={vi.fn()} />);
     expect(screen.getByText('No announcements from other admins')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /create announcement/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('BroadcastPreviewModal', () => {
+  it('renders the announcement preview with audience and content', () => {
+    render(
+      <BroadcastPreviewModal
+        isOpen
+        onClose={vi.fn()}
+        form={{
+          recipientMode: 'All users',
+          title: 'Platform update',
+          message: 'A new release is ready.',
+        }}
+      />,
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Announcement Preview' })).toBeInTheDocument();
+    expect(screen.getByText('PREVIEW')).toBeInTheDocument();
+    expect(screen.getByText('All users')).toBeInTheDocument();
+    expect(screen.getByText('Preview as student')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Platform update' })).toBeInTheDocument();
+    expect(screen.getByText('A new release is ready.')).toBeInTheDocument();
+  });
+
+  it('preserves selected-user chips and closes on Escape', async () => {
+    const user = userEvent.setup();
+    const handleClose = vi.fn();
+    render(
+      <BroadcastPreviewModal
+        isOpen
+        onClose={handleClose}
+        form={{
+          recipientMode: 'Specific users',
+          selectedUsers: [{ id: 1, username: 'Avery' }],
+          title: 'Team note',
+          message: 'For selected users.',
+        }}
+      />,
+    );
+
+    expect(screen.getByText('1 selected user')).toBeInTheDocument();
+    expect(screen.getByText('Avery')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(handleClose).toHaveBeenCalledTimes(1);
   });
 });
 

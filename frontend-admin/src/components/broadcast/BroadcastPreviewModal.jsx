@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { X, Users, Megaphone } from 'lucide-react';
+import { IconTile, StatusBadge } from '../ui/CardPrimitives';
 
 export function BroadcastPreviewModal({ isOpen, onClose, form }) {
   useEffect(() => {
@@ -35,23 +36,24 @@ export function BroadcastPreviewModal({ isOpen, onClose, form }) {
 
   return (
     <div
-      className="modal-overlay"
+      className="modal-overlay announcement-preview-overlay"
       role="dialog"
       aria-modal="true"
       aria-labelledby="preview-title"
       onClick={onClose}
     >
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-head">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="entry-icon" aria-hidden="true">
-              <Megaphone size={16} />
-            </span>
-            <h3 id="preview-title">Announcement Preview</h3>
+      <div className="announcement-preview-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="announcement-preview-header">
+          <div className="announcement-preview-heading">
+            <IconTile icon={Megaphone} tone="blue" size={18} />
+            <div>
+              <span className="announcement-preview-eyebrow">PREVIEW</span>
+              <h2 id="preview-title">Announcement Preview</h2>
+            </div>
           </div>
           <button
             type="button"
-            className="modal-close"
+            className="announcement-preview-close"
             onClick={onClose}
             aria-label="Close preview modal"
           >
@@ -59,19 +61,17 @@ export function BroadcastPreviewModal({ isOpen, onClose, form }) {
           </button>
         </div>
 
-        <div style={{ display: 'grid', gap: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="count-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+        <div className="announcement-preview-content">
+          <div className="announcement-preview-audience">
+            <StatusBadge tone="blue" className="announcement-preview-audience-badge">
               <Users size={12} aria-hidden="true" />
               {recipientSummary}
-            </span>
-            <small style={{ color: 'var(--color-text-secondary)', fontSize: '10px' }}>
-              Preview as student
-            </small>
+            </StatusBadge>
+            <span className="announcement-preview-hint">Preview as student</span>
           </div>
 
           {mode === 'Specific users' && selectedUsers.length > 0 && (
-            <div className="recipient-chips">
+            <div className="recipient-chips announcement-preview-selected-users">
               {selectedUsers.map((user) => (
                 <span className="recipient-chip static" key={user.id}>
                   {user.username}
@@ -80,31 +80,17 @@ export function BroadcastPreviewModal({ isOpen, onClose, form }) {
             </div>
           )}
 
-          <h4 style={{ margin: '0', fontSize: '15px', fontWeight: '800', color: 'var(--color-text-primary)' }}>
-            {form.title.trim() || 'Untitled Announcement'}
-          </h4>
+          <section className="announcement-preview-card" aria-label="Announcement content">
+            <h3 className="announcement-preview-title">
+              {form.title.trim() || 'Untitled Announcement'}
+            </h3>
+            <p className="announcement-preview-message">
+              {form.message.trim() || 'No announcement message entered yet.'}
+            </p>
+          </section>
 
-          <div
-            style={{
-              fontSize: '12px',
-              lineHeight: '1.7',
-              color: 'var(--color-text-primary)',
-              background: 'var(--color-bg-cream)',
-              padding: '14px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--color-border)',
-              whiteSpace: 'pre-wrap',
-            }}
-          >
-            {form.message.trim() || 'No announcement message entered yet.'}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '8px' }}>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={onClose}
-            >
+          <div className="announcement-preview-footer">
+            <button type="button" className="secondary-button" onClick={onClose}>
               Close Preview
             </button>
           </div>

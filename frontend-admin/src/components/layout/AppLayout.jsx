@@ -68,7 +68,7 @@ export function AppLayout({ broadcastCount = 0, toastMessage = '', onNotify }) {
         />
         <div className="content">
           <div className="tcs-watermark" aria-hidden="true">
-            IGNITE BUDDY
+            Ignite Buddy
           </div>
           <Outlet />
           <Footer />
